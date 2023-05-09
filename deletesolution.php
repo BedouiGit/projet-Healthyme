@@ -1,7 +1,7 @@
 <?php
-	include '../controller/solutionc.php';
-	$solution=new solutionc();
+	include '../controller/skincarec.php';
+	$solutions=new solutionsc();
 
-$solution->Deletesolution($_GET["id"]);
-header("Location:listsolution.php");
+$solutions->Deletesolution($_GET["id"]);
+header("Location:listsolutions.php");
 ?>

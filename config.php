@@ -1,4 +1,3 @@
-<!--connection BD--> 
 <?php   
 class config
 {
@@ -9,7 +8,7 @@ class config
         if (!isset(self::$pdo)) {
             try {
                 self::$pdo = new PDO(
-                    'mysql:host=localhost;dbname=skin_info',
+                    'mysql:host=localhost;dbname=skin_care',
                     'root',
                     '',
                     [

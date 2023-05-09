@@ -1,42 +1,40 @@
 <?php
+
 require_once '../controller/skincarec.php';
 
-$pdo = config::getConnexion();
+$productc = new productc();
 
-if (isset($_POST['submit'])) {
-    // Récupérer les données du formulaire
-    $id = $_POST['ids'];
-    $solution = $_POST['solution'];
-
-    // Mettre à jour la réservation dans la base de données
-    $query = "UPDATE solutions SET solution = :solution WHERE ids = :id";
-    $stmt = $pdo->prepare($query);
-    $stmt->bindValue(":id", $id);
-    $stmt->bindValue(":solution", $solution);
-    $stmt->execute();
-
-     // Redirect to listsolutions.php
-     header("Location: listsolutions.php?ids=" . $id);
-     exit;      
-}
-
-// Récupérer les données de la réservation à modifier en utilisant l'ID de la réservation
-if (isset($_GET['id'])) {
-    try {
-        $pdo = config::getConnexion();
-        $query = "SELECT * FROM solutions WHERE ids = :id";
-        $stmt = $pdo->prepare($query);
-        $stmt->bindValue(":id", $_GET['id']);
-        $stmt->execute();
-        $solutions = $stmt->fetch(PDO::FETCH_ASSOC);
-    } catch (PDOException $e) {
-        echo "Erreur: " . $e->getMessage();
-    }
-   
-}
+$list = $productc->listproduct();
 
 ?>
+<?php
+// Database connection
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "skin_care";
+$conn = mysqli_connect($servername, $username, $password, $dbname);
+if (!$conn) {
+    die("Connection failed: " . mysqli_connect_error());
+}
 
+// Search query
+if(isset($_POST['search'])) {
+  $search_term = $_POST['search'];
+
+  $sql = "SELECT * FROM products WHERE 
+  id LIKE '%$search_term%' OR 
+  skintype LIKE '%$search_term%' OR 
+  product LIKE '%$search_term%' OR 
+  producttype LIKE '%$search_term%'";
+
+  $result = mysqli_query($conn, $sql);
+} else {
+  $result = mysqli_query($conn, "SELECT * FROM products");
+}
+
+// Display search results
+?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -52,7 +50,7 @@ if (isset($_GET['id'])) {
     <link rel="stylesheet" href="assets/vendors/css/vendor.bundle.base.css">
     <link rel="stylesheet" href="assets/vendors/css/vendor.bundle.addons.css">
     <script src="https://kit.fontawesome.com/ac87c673ce.js" crossorigin="anonymous"></script>
-    <link href="CSS1/template.css" rel="stylesheet" />
+    <link href="CSS1/template1.css" rel="stylesheet" />
     <!-- endinject -->
     <!-- plugin css for this page -->
     <!-- End plugin css for this page -->
@@ -84,8 +82,18 @@ if (isset($_GET['id'])) {
               
             </div>
           </li>
+          <div class="my-container">
+            <h1></h1>
+            <p> </p>
+          </div>
           <li class="nav-item dropdown"> 
-              <div></div>
+              <div> <br>
+                <form method="post" action="" class="ml-auto search-form d-none d-md-block">
+                <i class="form-group"></i>
+                <input type="text" name="search" placeholder="Search..." class="form-control">
+                  <button type="submit" class="add btn btn-primary todo-list-add-btn">Search</button>
+                </form>
+              </div>
           </li>
           <li class="nav-item dropdown d-none d-xl-inline-block user-dropdown">
           </li>
@@ -127,48 +135,74 @@ if (isset($_GET['id'])) {
             </li>
           </ul>
         </nav>
-          <!-- partial -->
-          <div class="main-panel">
-            <div class="content-wrapper">
-   <!--update-->
-<div class="col-md-9">
-    <div class="contact-form text-center">
-    <form action="#" method="post">
-    <div class="form-group">
-    <div class="form-group">
-                <label class="control-label col-sm-2" for="ids">ID:</label>
-                <div class="col-sm-10">
-                    <input type="hidden" name="ids" value="<?php echo $solutions['ids']; ?>" readonly>
-                    <span><?php echo $solutions['ids']; ?></span>
-                </div>
+    <!-- partial -->
+
+    <!-- List Products -->
+    <div class="main-panel">
+        <div class="content-wrapper">
+            <div class="form mt-5">
+                <form action="#" method="post" role="form" class="php-email-form">
+                    <div class="contact">
+                        <table border="1" align="center" style="border-collapse: separate; border-spacing: 10px;">
+                            <tr>
+                                <th>ID </th>
+                                <th>Skin Type </th>
+                                <th>Product</th>
+                                <th>Product Type</th>
+                                <th>Modify</th>
+                                <th>Delete</th>
+                            </tr>
+
+                            <?php 
+if(isset($_POST['search'])) {
+  while($solutionc = mysqli_fetch_assoc($result)) {
+?>
+<tr data-id="<?php echo $solutionc['id']; ?>">
+  <td><?php echo $solutionc['id']; ?></td>
+  <td><?php echo $solutionc['skintype']; ?></td>
+  <td><?php echo $solutionc['product']; ?></td>
+  <td><?php echo $solutionc['producttype']; ?></td>
+  <?php $show_update = true; ?>
+  <td class="modify"> <?php if ($show_update) : ?>
+    <a href="updateproduct.php?id=<?php echo $solutionc['id']; ?>"><i class="fa-solid fa-pen-to-square"></i> </a>
+  <?php endif; ?>
+  </td>
+  <?php $show_delete = true; ?>
+  <td class="delete"> <?php if ($show_delete) : ?>
+    <a href="deleteproduct.php?id=<?php echo $solutionc['id']; ?>"><i class="fa-solid fa-trash-can "></i></i></a>
+  <?php endif; ?>
+  </td>
+</tr>
+<?php 
+  } 
+} else {
+  foreach ($list as $solutionc) {?>
+    <tr>
+      <td><?php echo $solutionc['id']; ?></td>
+      <td><?php echo $solutionc['skintype']; ?></td>
+      <td><?php echo $solutionc['product']; ?></td>
+      <td><?php echo $solutionc['producttype']; ?></td>
+      <?php $show_update = true; ?>
+      <td class="modify"> <?php if ($show_update) : ?>
+        <a href="updateproduct.php?id=<?php echo $solutionc['id']; ?>"><i class="fa-solid fa-pen-to-square"></i> </a>
+      <?php endif; ?>
+      </td>
+      <?php $show_delete = true; ?>
+      <td class="delete"> <?php if ($show_delete) : ?>
+        <a href="deleteproduct.php?id=<?php echo $solutionc['id']; ?>"><i class="fa-solid fa-trash-can "></i></i></a>
+      <?php endif; ?>
+      </td>
+    </tr>
+<?php } }?>
+
+                        </table>
+                    </div>
+                </form>
             </div>
-            < <div class="form-group">
-                <label class="control-label col-sm-2" for="ID">ID Problem:</label>
-                <div class="col-sm-10">
-                    <input type="hidden" name="ID" value="<?php echo $solutions['ID']; ?>" readonly>
-                    <span><?php echo $solutions['ID']; ?></span>
-                </div>
-            </div>
-        <div class="form-group">
-          <label class="control-label col-sm-2" for="solution">Solution:</label>
-          <div class="col-sm-10">
-          <input type="text" class="form-control" name="solution" id="solution" value="<?php echo $solutions ['solution']; ?>" placeholder="solution" required>
-          </div>
         </div>
     </div>
-    <div class="form-group">        
-                          <div class="col-sm-offset-2 col-sm-10">
-                              <button type="submit" class="btn btn-default" name="submit" >Modify</button>
-                          </div>
-                      </div>
-  </form>
-</div>
-</div>
- <!--end update-->
-
-                  </div>
-                </div>
-              
+    <!-- End List Products-->
+      
         <!-- partial -->
         <div class="main-panel">
             <div class="content-wrapper"> </div>

@@ -1,42 +1,15 @@
 <?php
+
 require_once '../controller/skincarec.php';
 
-$pdo = config::getConnexion();
 
-if (isset($_POST['submit'])) {
-    // Récupérer les données du formulaire
-    $id = $_POST['ids'];
-    $solution = $_POST['solution'];
+$problemsc = new problemsc();
 
-    // Mettre à jour la réservation dans la base de données
-    $query = "UPDATE solutions SET solution = :solution WHERE ids = :id";
-    $stmt = $pdo->prepare($query);
-    $stmt->bindValue(":id", $id);
-    $stmt->bindValue(":solution", $solution);
-    $stmt->execute();
 
-     // Redirect to listsolutions.php
-     header("Location: listsolutions.php?ids=" . $id);
-     exit;      
-}
+$list = $problemsc->listProblems();
 
-// Récupérer les données de la réservation à modifier en utilisant l'ID de la réservation
-if (isset($_GET['id'])) {
-    try {
-        $pdo = config::getConnexion();
-        $query = "SELECT * FROM solutions WHERE ids = :id";
-        $stmt = $pdo->prepare($query);
-        $stmt->bindValue(":id", $_GET['id']);
-        $stmt->execute();
-        $solutions = $stmt->fetch(PDO::FETCH_ASSOC);
-    } catch (PDOException $e) {
-        echo "Erreur: " . $e->getMessage();
-    }
-   
-}
 
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -130,41 +103,69 @@ if (isset($_GET['id'])) {
           <!-- partial -->
           <div class="main-panel">
             <div class="content-wrapper">
-   <!--update-->
-<div class="col-md-9">
-    <div class="contact-form text-center">
-    <form action="#" method="post">
-    <div class="form-group">
-    <div class="form-group">
-                <label class="control-label col-sm-2" for="ids">ID:</label>
-                <div class="col-sm-10">
-                    <input type="hidden" name="ids" value="<?php echo $solutions['ids']; ?>" readonly>
-                    <span><?php echo $solutions['ids']; ?></span>
-                </div>
-            </div>
-            < <div class="form-group">
-                <label class="control-label col-sm-2" for="ID">ID Problem:</label>
-                <div class="col-sm-10">
-                    <input type="hidden" name="ID" value="<?php echo $solutions['ID']; ?>" readonly>
-                    <span><?php echo $solutions['ID']; ?></span>
-                </div>
-            </div>
-        <div class="form-group">
-          <label class="control-label col-sm-2" for="solution">Solution:</label>
-          <div class="col-sm-10">
-          <input type="text" class="form-control" name="solution" id="solution" value="<?php echo $solutions ['solution']; ?>" placeholder="solution" required>
-          </div>
-        </div>
-    </div>
-    <div class="form-group">        
-                          <div class="col-sm-offset-2 col-sm-10">
-                              <button type="submit" class="btn btn-default" name="submit" >Modify</button>
-                          </div>
-                      </div>
-  </form>
-</div>
-</div>
- <!--end update-->
+     <!-- ======= list problems ======= -->
+     <div class="form mt-5">
+        <form action="#" method="post" role="form" class="php-email-form">
+
+            <div class="contact">
+
+                <table border="1" align="center" style="border-collapse: separate; border-spacing: 10px;">
+
+                    <tr>
+
+
+                        <th>ID </th>
+                        <th>Skin Type </th>
+                        <th>Problem</th>
+                        <th>Solved?</th>
+                        <th>Respond</th>
+                        <th>Delete</th>
+
+                    </tr>
+
+                   <?php
+                    foreach ($list as $problemsc) {
+
+
+
+                    ?>
+
+                        <tr>
+
+                            <td><?php echo $problemsc['ID']; ?></td>
+                            <td><?php echo $problemsc['skintype']; ?></td>
+                            <td><?php echo $problemsc['problem']; ?></td>
+                            <td><?php echo $problemsc['responded']; ?></td>
+
+                            <?php
+                            $show_respond = true;
+                            ?>
+                            <td class="respond">
+                             <?php if ($show_respond) : ?>
+                             <a href="addsolution.php?id=<?php echo $problemsc['ID']; ?>"><i class="fa-solid fa-pen-to-square"></i></a>
+                              <?php endif; ?>
+                               </td>
+
+
+
+                            <?php
+                            $show_delete = true;
+                            ?>
+                            <td class="delete"> <?php if ($show_delete) : ?>
+                                    <a href="deleteproblem.php?id=<?php echo $problemsc['ID']; ?>"><i class="fa-solid fa-trash-can "></i></i></a>
+                                <?php endif; ?>
+                            </td>
+
+
+
+
+                        </tr>
+
+                    <?php } ?>
+                            </table>
+                            </div>
+                            </form>
+                            </div>  <!-- End list problems -->
 
                   </div>
                 </div>

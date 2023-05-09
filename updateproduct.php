@@ -1,42 +1,47 @@
 <?php
 require_once '../controller/skincarec.php';
 
-$pdo = config::getConnexion();
-
 if (isset($_POST['submit'])) {
     // Récupérer les données du formulaire
-    $id = $_POST['ids'];
-    $solution = $_POST['solution'];
+    $id = $_POST['id'];
+    $skintype = $_POST['skintype'];
+    $product = $_POST['product'];
+    $producttype = $_POST['producttype'];
 
     // Mettre à jour la réservation dans la base de données
-    $query = "UPDATE solutions SET solution = :solution WHERE ids = :id";
-    $stmt = $pdo->prepare($query);
-    $stmt->bindValue(":id", $id);
-    $stmt->bindValue(":solution", $solution);
-    $stmt->execute();
-
-     // Redirect to listsolutions.php
-     header("Location: listsolutions.php?ids=" . $id);
-     exit;      
+    $pdo = config::getConnexion();
+    try {
+        $query = "UPDATE products SET skintype = :skintype, product = :product, producttype = :producttype WHERE id = :id";
+        $stmt = $pdo->prepare($query);
+        $stmt->bindValue(":id", $id);
+        $stmt->bindValue(":skintype", $skintype);
+        $stmt->bindValue(":product", $product);
+        $stmt->bindValue(":producttype", $producttype);
+        $stmt->execute();
+        // Redirect to listproduct.php
+   header("Location: listproduct.php?product=" . $product);
+   exit; 
+        echo "Les informations ont été modifiées avec succès";
+    } catch (PDOException $e) {
+        echo "Erreur: " . $e->getMessage();
+    }    
 }
-
 // Récupérer les données de la réservation à modifier en utilisant l'ID de la réservation
 if (isset($_GET['id'])) {
+    $pdo = config::getConnexion();
     try {
-        $pdo = config::getConnexion();
-        $query = "SELECT * FROM solutions WHERE ids = :id";
+        $query = "SELECT * FROM products WHERE id = :id";
         $stmt = $pdo->prepare($query);
         $stmt->bindValue(":id", $_GET['id']);
         $stmt->execute();
-        $solutions = $stmt->fetch(PDO::FETCH_ASSOC);
+        $product = $stmt->fetch(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
         echo "Erreur: " . $e->getMessage();
     }
-   
+
+    $_POST = array();
 }
-
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -130,41 +135,58 @@ if (isset($_GET['id'])) {
           <!-- partial -->
           <div class="main-panel">
             <div class="content-wrapper">
-   <!--update-->
-<div class="col-md-9">
-    <div class="contact-form text-center">
-    <form action="#" method="post">
-    <div class="form-group">
-    <div class="form-group">
-                <label class="control-label col-sm-2" for="ids">ID:</label>
-                <div class="col-sm-10">
-                    <input type="hidden" name="ids" value="<?php echo $solutions['ids']; ?>" readonly>
-                    <span><?php echo $solutions['ids']; ?></span>
-                </div>
-            </div>
-            < <div class="form-group">
-                <label class="control-label col-sm-2" for="ID">ID Problem:</label>
-                <div class="col-sm-10">
-                    <input type="hidden" name="ID" value="<?php echo $solutions['ID']; ?>" readonly>
-                    <span><?php echo $solutions['ID']; ?></span>
-                </div>
-            </div>
-        <div class="form-group">
-          <label class="control-label col-sm-2" for="solution">Solution:</label>
-          <div class="col-sm-10">
-          <input type="text" class="form-control" name="solution" id="solution" value="<?php echo $solutions ['solution']; ?>" placeholder="solution" required>
+               <!-- ======= update ======= -->
+    <div class="col-md-9">
+        <div class="contact-form text-center">
+            <form action="#" method="post">
+            <div class="form-group">
+    <label class="control-label col-sm-2">ID:</label>
+    <div class="col-sm-10">
+        <input type="hidden" name="id" value="<?php echo $product['id']; ?>" readonly>
+        <span><?php echo $product['id']; ?></span>
+    </div>
+</div>
+                <div class="form-group">
+                    <label class="control-label col-sm-2" for="skintype">Skin Type:</label>
+                    <div class="col-sm-10">
+                        <select class="form-control" id="skintype" name="skintype" placeholder="Skin Type" required>
+                            <option value="normal" <?php if ($product['skintype'] == 'normal') {echo 'selected';} ?>>Peau normale</option>
+                            <option value="oily" <?php if ($product['skintype'] == 'oily') {echo 'selected';} ?>>Peau grasse</option>
+                            <option value="dry" <?php if ($product['skintype'] == 'dry') {echo 'selected';} ?>>Peau sèche</option>
+                            <option value="combination" <?php if ($product['skintype'] == 'combination'){ echo 'selected'; } ?>>Peau mixte</option>
+</select>
           </div>
         </div>
+        <div class="form-group">
+          <label class="control-label col-sm-2" for="product">Product:</label>
+          <div class="col-sm-10">
+            <input type="text" class="form-control" name="product" id="product" value="<?php echo $product ['product']; ?>" placeholder="product  " required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="control-label col-sm-2" for="producttype">Product Type:</label>
+          <div class="col-sm-10">
+          <select class="form-control" id="producttype" name="producttype" placeholder="Product Type" required>
+  <option value="Cleanser" <?php if ($product['producttype'] == 'Cleanser') { echo 'selected'; } ?>>Cleanser</option>
+  <option value="Exfoliator" <?php if ($product['producttype'] == 'Exfoliator') { echo 'selected'; } ?>>Exfoliator</option>
+  <option value="Treatment" <?php if ($product['producttype'] == 'Treatment') { echo 'selected'; } ?>>Treatment</option>
+  <option value="Serum" <?php if ($product['producttype'] == 'Serum') { echo 'selected'; } ?>>Serum</option>
+  <option value="Face Oil" <?php if ($product['producttype'] == 'Face Oil') { echo 'selected'; } ?>>Face Oil</option>
+  <option value="Sunscreen" <?php if ($product['producttype'] == 'Sunscreen') { echo 'selected'; } ?>>Sunscreen</option>
+  <option value="Moisturizer" <?php if ($product['producttype'] == 'Moisturizer') { echo 'selected'; } ?>>Moisturizer</option>
+  <option value="Chemical Peel" <?php if ($product['producttype'] == 'Chemical Peel') { echo 'selected'; } ?>>Chemical Peel</option>
+  <option value="Toner" <?php if ($product['producttype'] == 'Toner') { echo 'selected'; } ?>>Toner</option>
+</select>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="col-sm-offset-2 col-sm-10">
+            <button type="submit" class="btn btn-default" name="submit">Modify</button>
+          </div>
+        </div>
+      </form>
     </div>
-    <div class="form-group">        
-                          <div class="col-sm-offset-2 col-sm-10">
-                              <button type="submit" class="btn btn-default" name="submit" >Modify</button>
-                          </div>
-                      </div>
-  </form>
-</div>
-</div>
- <!--end update-->
+  </div> <!-- End update -->
 
                   </div>
                 </div>

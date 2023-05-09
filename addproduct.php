@@ -1,42 +1,38 @@
-<?php
+<?php 
 require_once '../controller/skincarec.php';
-
-$pdo = config::getConnexion();
-
+$product = null;
+$productc = new productc();
 if (isset($_POST['submit'])) {
-    // Récupérer les données du formulaire
-    $id = $_POST['ids'];
-    $solution = $_POST['solution'];
+    if (
+        isset($_POST['skintype'])
+        && isset($_POST['product'])
+        && isset($_POST['producttype'])
+    ) {
 
-    // Mettre à jour la réservation dans la base de données
-    $query = "UPDATE solutions SET solution = :solution WHERE ids = :id";
-    $stmt = $pdo->prepare($query);
-    $stmt->bindValue(":id", $id);
-    $stmt->bindValue(":solution", $solution);
-    $stmt->execute();
+        if (
+            !empty($_POST['skintype']) &&
+            !empty($_POST['product']) &&
+            !empty($_POST['producttype'])
+        ) {
+            $product = new product(
+                null,
+                $_POST['skintype'],
+                $_POST['product'],
+                $_POST['producttype'],
+                '0'
+            );
 
-     // Redirect to listsolutions.php
-     header("Location: listsolutions.php?ids=" . $id);
-     exit;      
-}
 
-// Récupérer les données de la réservation à modifier en utilisant l'ID de la réservation
-if (isset($_GET['id'])) {
-    try {
-        $pdo = config::getConnexion();
-        $query = "SELECT * FROM solutions WHERE ids = :id";
-        $stmt = $pdo->prepare($query);
-        $stmt->bindValue(":id", $_GET['id']);
-        $stmt->execute();
-        $solutions = $stmt->fetch(PDO::FETCH_ASSOC);
-    } catch (PDOException $e) {
-        echo "Erreur: " . $e->getMessage();
+            $productc->addproduct($product);
+            // Redirect user to list.php with problem parameters
+            header("Location:listproduct.php");
+            exit();
+        } else
+            $error = "Missing information";
     }
-   
+    $_POST = array();
 }
-
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -129,46 +125,64 @@ if (isset($_GET['id'])) {
         </nav>
           <!-- partial -->
           <div class="main-panel">
-            <div class="content-wrapper">
-   <!--update-->
-<div class="col-md-9">
-    <div class="contact-form text-center">
-    <form action="#" method="post">
-    <div class="form-group">
-    <div class="form-group">
-                <label class="control-label col-sm-2" for="ids">ID:</label>
-                <div class="col-sm-10">
-                    <input type="hidden" name="ids" value="<?php echo $solutions['ids']; ?>" readonly>
-                    <span><?php echo $solutions['ids']; ?></span>
-                </div>
-            </div>
-            < <div class="form-group">
-                <label class="control-label col-sm-2" for="ID">ID Problem:</label>
-                <div class="col-sm-10">
-                    <input type="hidden" name="ID" value="<?php echo $solutions['ID']; ?>" readonly>
-                    <span><?php echo $solutions['ID']; ?></span>
-                </div>
-            </div>
-        <div class="form-group">
-          <label class="control-label col-sm-2" for="solution">Solution:</label>
-          <div class="col-sm-10">
-          <input type="text" class="form-control" name="solution" id="solution" value="<?php echo $solutions ['solution']; ?>" placeholder="solution" required>
-          </div>
-        </div>
-    </div>
-    <div class="form-group">        
-                          <div class="col-sm-offset-2 col-sm-10">
-                              <button type="submit" class="btn btn-default" name="submit" >Modify</button>
-                          </div>
+          <div class="content-wrapper">
+          <section class="container-fluid footer">
+            <div class="container">
+              <div class="row">
+                <div class="col-md-9">
+                  <div class="contact-form text-center">
+                    <form action="#" method="post">
+                      <div class="form-group">
+                        <label class="control-label col-sm-2" for="skintype">Skin Type:</label>
+                        <div class="col-sm-10">
+                          <select class="form-control" id="skintype" name="skintype">
+                            <option value="normal">Peau normale</option>
+                            <option value="oily">Peau grasse</option>
+                            <option value="dry">Peau sèche</option>
+                            <option value="combination">Peau mixte</option>
+                          </select>
+                        </div>
                       </div>
-  </form>
-</div>
-</div>
- <!--end update-->
-
+                      <div class="form-group">
+                        <label class="control-label col-sm-2" for="product">Product:</label>
+                        <div class="col-sm-10">
+                          <input type="text" class="form-control" id="product" placeholder="Enter Product" name="product">
+                        </div>
+                      </div>
+                      </div>
+                      <div class="form-group">
+                        <label class="control-label col-sm-2" for="producttype">Product Type:</label>
+                        <div class="col-sm-10">
+                          <select class="form-control" id="producttype" name="producttype">
+                            <option value="Cleanser">Cleanser</option>
+                            <option value="Exfoliator">Exfoliator</option>
+                            <option value="Treatment">Treatment</option>
+                            <option value="Serum">Serum</option>
+                            <option value="Face Oil">Face Oil</option>
+                            <option value="Sunscreen">Sunscreen</option>
+                            <option value="Moisturizer">Moisturizer</option>
+                            <option value="Chemical Peel">Chemical Peel</option>
+                            <option value="Toner">Toner</option>
+                            <option value="Face Mask">Face Mask</option>
+                            <option value="Eye Cream">Eye Cream</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <div class="col-sm-offset-2 col-sm-10">
+                          <button type="submit" class="btn btn-default" name="submit">submit</button>
+                        </div>
+                      </div>
+                    </form>
                   </div>
                 </div>
-              
+              </div>
+            </div>
+          </section>
+          </div>
+          </div>
+
+          <!--js-->
         <!-- partial -->
         <div class="main-panel">
             <div class="content-wrapper"> </div>
